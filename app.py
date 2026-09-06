@@ -4,68 +4,83 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-# Set page configuration
+# Page Configuration
 st.set_page_config(
-    page_title="Student Performance Predictor",
+    page_title="Student Result Predictor",
     page_icon="🎓",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for UI styling
+# Custom Styling: Vertical Form Layout with Shadows & Modern Card Design
 st.markdown("""
 <style>
-    /* Main Background & Fonts */
-    .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    }
-    
-    /* Card Container */
-    .metric-card {
-        background-color: #ffffff;
-        padding: 24px;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-        border: 1px solid #e1e8ed;
-        text-align: center;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .metric-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
-    }
-    
-    /* Headers */
-    .title-header {
+    /* Global Background */
+    .stApp {
+        background: #F8FAFC;
         font-family: 'Inter', sans-serif;
-        color: #1E293B;
-        font-weight: 800;
-        text-align: center;
-        margin-bottom: 0.2rem;
-    }
-    .subtitle-header {
-        color: #64748B;
-        text-align: center;
-        margin-bottom: 2rem;
     }
     
-    /* Predict Button Styling */
+    /* Main Container Padding */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+        max-width: 680px;
+    }
+    
+    /* Card Layout with Shadows */
+    .custom-card {
+        background-color: #FFFFFF;
+        padding: 28px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+        border: 1px solid #E2E8F0;
+        margin-bottom: 24px;
+    }
+
+    /* Prediction Result Card */
+    .result-card {
+        background: linear-gradient(135deg, #4F46E5 0%, #3B82F6 100%);
+        color: #FFFFFF;
+        padding: 30px;
+        border-radius: 16px;
+        text-align: center;
+        box-shadow: 0 12px 20px -3px rgba(79, 70, 229, 0.35);
+        margin-top: 16px;
+    }
+
+    /* Headers */
+    .main-title {
+        color: #0F172A;
+        font-size: 28px;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 6px;
+    }
+    .sub-title {
+        color: #64748B;
+        font-size: 15px;
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    /* Styled Prediction Button */
     div.stButton > button:first-child {
-        background: linear-gradient(90deg, #4F46E5 0%, #7C3AED 100%);
-        color: white;
-        font-size: 18px;
+        background: #4F46E5;
+        color: #FFFFFF;
+        font-size: 16px;
         font-weight: 600;
-        padding: 12px 30px;
-        border-radius: 12px;
+        padding: 12px 24px;
+        border-radius: 10px;
         border: none;
         width: 100%;
-        box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
-        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        transition: all 0.2s ease-in-out;
     }
     div.stButton > button:first-child:hover {
-        background: linear-gradient(90deg, #4338CA 0%, #6D28D9 100%);
-        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
-        transform: scale(1.02);
+        background: #4338CA;
+        box-shadow: 0 6px 16px rgba(79, 70, 229, 0.45);
+        transform: translateY(-1px);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -73,87 +88,72 @@ st.markdown("""
 
 @st.cache_resource
 def load_model():
-    """Load the serialized KNN model."""
+    """Load the trained KNN model."""
     with open("model.pkl", "rb") as file:
-        model = pickle.load(file)
-    return model
+        return pickle.load(file)
 
 try:
     model = load_model()
 except Exception as e:
-    st.error(f"Error loading `model.pkl`: {e}")
+    st.error(f"Error loading model file (`model.pkl`): {e}")
     st.stop()
 
 # Header Section
-st.markdown("<h1 class='title-header'>🎓 Academic Performance Predictor</h1>", unsafe_allow_html=True)
-st.markdown("<p class='subtitle-header'>Enter the individual subject marks below to estimate the total score using your KNN model.</p>", unsafe_allow_html=True)
+st.markdown("<h1 class='main-title'>🎓 Student Result Predictor</h1>", unsafe_allow_html=True)
+st.markdown("<p class='sub-title'>Enter the student's scores across all subjects below to calculate the predicted total.</p>", unsafe_allow_html=True)
 
-# Sidebar Configuration
-with st.sidebar:
-    st.header("⚙️ Model Details")
-    st.info("""
-    **Model Type:** K-Neighbors Classifier  
-    **Algorithm:** KD-Tree  
-    **Input Features:** 6 Subjects  
-    **Target:** Predicted Total Score  
-    """)
-    st.markdown("---")
-    st.caption("🚀 Built with Streamlit & Scikit-Learn")
+# Main Form Card (Vertical Stack)
+st.markdown("<div class='custom-card'>", unsafe_allow_html=True)
+st.subheader("📚 Subject Marks (0 - 100)")
 
-# Input Form
-st.markdown("### 📝 Input Subject Scores")
+# Vertical Form Inputs
+hindi = st.number_input("Hindi", min_value=0, max_value=100, value=75, step=1)
+english = st.number_input("English", min_value=0, max_value=100, value=80, step=1)
+science = st.number_input("Science", min_value=0, max_value=100, value=85, step=1)
+maths = st.number_input("Maths", min_value=0, max_value=100, value=90, step=1)
+history = st.number_input("History", min_value=0, max_value=100, value=70, step=1)
+geography = st.number_input("Geography", min_value=0, max_value=100, value=78, step=1)
 
-col1, col2, col3 = st.columns(3)
+# Format features into a Pandas DataFrame to preserve feature structure & names
+feature_dict = {
+    "Hindi": hindi,
+    "English": english,
+    "Science": science,
+    "Maths": maths,
+    "History": history,
+    "Geography": geography
+}
 
-with col1:
-    hindi = st.number_input("Hindi Marks", min_value=0, max_value=100, value=75, step=1)
-    english = st.number_input("English Marks", min_value=0, max_value=100, value=80, step=1)
-
-with col2:
-    science = st.number_input("Science Marks", min_value=0, max_value=100, value=85, step=1)
-    maths = st.number_input("Maths Marks", min_value=0, max_value=100, value=90, step=1)
-
-with col3:
-    history = st.number_input("History Marks", min_value=0, max_value=100, value=70, step=1)
-    geography = st.number_input("Geography Marks", min_value=0, max_value=100, value=78, step=1)
+# If the model expects specific feature names, align DataFrame columns
+if hasattr(model, "feature_names_in_"):
+    input_df = pd.DataFrame([feature_dict])[list(model.feature_names_in_)]
+else:
+    input_df = pd.DataFrame([feature_dict])
 
 st.markdown("<br>", unsafe_allow_html=True)
+predict_clicked = st.button("🔮 Predict Total Result")
+st.markdown("</div>", unsafe_allow_html=True)
 
-# Feature alignment matching model's feature_names_in_
-features = np.array([[hindi, english, science, maths, history, geography]])
+# Execution and Result Handling
+if predict_clicked:
+    with st.spinner("Calculating result..."):
+        time.sleep(0.4)
+        try:
+            prediction = model.predict(input_df)[0]
+            
+            # Display Prediction Card
+            st.markdown(f"""
+            <div class="result-card">
+                <p style="font-size: 16px; margin-bottom: 4px; opacity: 0.9;">Predicted Total Score</p>
+                <h1 style="font-size: 48px; margin: 0; font-weight: 800;">{prediction}</h1>
+                <p style="font-size: 14px; margin-top: 8px; opacity: 0.85;">
+                    Average Input Mark: {np.mean(list(feature_dict.values())):.1f} / 100
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Display Verification Confirmation
+            st.caption("✅ Prediction processed successfully.")
 
-# Prediction Button & Animation Effects
-if st.button("🔮 Predict Total Score"):
-    # Animated Loading State
-    with st.spinner("Processing features and querying KNN model..."):
-        time.sleep(0.6)  # Brief delay to enhance effect
-        prediction = model.predict(features)[0]
-
-    # Trigger celebration effects
-    st.balloons()
-
-    st.markdown("---")
-    
-    # Results Display
-    res_col1, res_col2, res_col3 = st.columns([1, 2, 1])
-
-    with res_col2:
-        st.markdown(f"""
-        <div class="metric-card">
-            <h3 style="color: #64748B; margin-bottom: 8px;">Predicted Total Score</h3>
-            <h1 style="color: #4F46E5; font-size: 54px; margin: 0;">{prediction}</h1>
-            <p style="color: #10B981; font-weight: 600; margin-top: 8px;">
-                Average Score: {np.mean(features):.2f} / 100
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Visual Breakdown Table
-    st.markdown("### 📊 Subject Breakdown")
-    input_data = pd.DataFrame({
-        "Subject": ["Hindi", "English", "Science", "Maths", "History", "Geography"],
-        "Score": [hindi, english, science, maths, history, geography]
-    })
-    st.dataframe(input_data, use_container_width=True, hide_index=True)
+        except Exception as err:
+            st.error(f"Prediction failed: {err}")
